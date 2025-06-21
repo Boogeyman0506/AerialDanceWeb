@@ -1,9 +1,9 @@
-import { ClientsForm } from "./features/clients/components/ClientsForm"
+import { ClientsFormContainer } from "./features/clients/components/ClientsFormContainer"
 
 export const App = () => {
   return (
     <>
-      <ClientsForm />
+      <ClientsFormContainer />
     </>
   )
 }

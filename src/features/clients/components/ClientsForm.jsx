@@ -11,7 +11,14 @@ import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { InputTextarea } from "primereact/inputtextarea";
 
-export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
+export const ClientsForm = ({
+  cliente = null,
+  onSubmit,
+  onCancel,
+  validationErrors = {},
+  loading = false
+}) => {
+
   const [formData, setFormData] = useState({
     // Personal data
     firstName: cliente?.firstName || '',
@@ -91,14 +98,46 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
         age: age.toString()
       }));
     }
+
+    // Limpiar campos condicionales cuando se desactivan
+    if (field === 'hasDisease' && !value) {
+      setFormData(prev => ({ ...prev, diseaseName: '' }));
+    }
+    if (field === 'hasInjury' && !value) {
+      setFormData(prev => ({ ...prev, injuryName: '' }));
+    }
+    if (field === 'takesMedications' && !value) {
+      setFormData(prev => ({ ...prev, medicationsName: '' }));
+    }
+    if (field === 'hasAllergies' && !value) {
+      setFormData(prev => ({ ...prev, allergiesName: '' }));
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+
+    if (onSubmit) {
+      onSubmit(formData);
+    }
+  };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    }
   };
 
   const isEditing = !!cliente;
+
+  // Helper para mostrar errores
+  const getFieldError = (fieldName) => {
+    return validationErrors[fieldName];
+  };
+
+  const hasFieldError = (fieldName) => {
+    return !!validationErrors[fieldName];
+  };
 
   return (
     <div className="p-4">
@@ -129,11 +168,14 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     id="firstName"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    className="w-full"
+                    className={`w-full ${hasFieldError('firstName') ? 'p-invalid' : ''}`}
                     required
                   />
                   <label htmlFor="firstName">Nombre(s)</label>
                 </FloatLabel>
+                {hasFieldError('firstName') && (
+                  <small className="p-error block mt-1">{getFieldError('firstName')}</small>
+                )}
               </div>
 
               <div className="flex align-items-center justify-content-center">
@@ -142,11 +184,14 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     id="lastName"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    className="w-full"
+                    className={`w-full ${hasFieldError('lastName') ? 'p-invalid' : ''}`}
                     required
                   />
                   <label htmlFor="lastName">Apellido(s)</label>
                 </FloatLabel>
+                {hasFieldError('lastName') && (
+                  <small className="p-error block mt-1">{getFieldError('lastName')}</small>
+                )}
               </div>
 
               <div className="flex align-items-center justify-content-center">
@@ -156,10 +201,13 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     value={formData.birthDate}
                     onChange={(e) => handleInputChange('birthDate', e.value)}
                     dateFormat="dd/mm/yy"
-                    className="w-full"
+                    className={`w-full ${hasFieldError('birthDate') ? 'p-invalid' : ''}`}
                   />
                   <label htmlFor="birthDate">Fecha de nacimiento</label>
                 </FloatLabel>
+                {hasFieldError('birthDate') && (
+                  <small className="p-error block mt-1">{getFieldError('birthDate')}</small>
+                )}
               </div>
 
               <div className="flex align-items-center justify-content-center">
@@ -181,10 +229,13 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     value={formData.phone}
                     onValueChange={(e) => handleInputChange('phone', e.value)}
                     useGrouping={false}
-                    className="w-full"
+                    className={`w-full ${hasFieldError('phone') ? 'p-invalid' : ''}`}
                   />
                   <label htmlFor="phone">Teléfono</label>
                 </FloatLabel>
+                {hasFieldError('phone') && (
+                  <small className="p-error block mt-1">{getFieldError('phone')}</small>
+                )}
               </div>
 
               <div className="flex align-items-center justify-content-center">
@@ -193,11 +244,14 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     id="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full"
+                    className={`w-full ${hasFieldError('email') ? 'p-invalid' : ''}`}
                     required
                   />
                   <label htmlFor="email">E-mail</label>
                 </FloatLabel>
+                {hasFieldError('email') && (
+                  <small className="p-error block mt-1">{getFieldError('email')}</small>
+                )}
               </div>
             </div>
           </div>
@@ -217,6 +271,7 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     value={formData.state}
                     onChange={(e) => handleInputChange('state', e.target.value)}
                     className="w-full"
+                    required
                   />
                   <label htmlFor="state">Estado</label>
                 </FloatLabel>
@@ -229,6 +284,7 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     value={formData.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
                     className="w-full"
+                    required
                   />
                   <label htmlFor="city">Ciudad</label>
                 </FloatLabel>
@@ -241,6 +297,7 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     value={formData.neighborhood}
                     onChange={(e) => handleInputChange('neighborhood', e.target.value)}
                     className="w-full"
+                    required
                   />
                   <label htmlFor="neighborhood">Colonia</label>
                 </FloatLabel>
@@ -253,6 +310,7 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     value={formData.street}
                     onChange={(e) => handleInputChange('street', e.target.value)}
                     className="w-full"
+                    required
                   />
                   <label htmlFor="street">Calle y número</label>
                 </FloatLabel>
@@ -265,6 +323,7 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     value={formData.zipCode}
                     onChange={(e) => handleInputChange('zipCode', e.target.value)}
                     className="w-full"
+                    required
                   />
                   <label htmlFor="zipCode">Código postal</label>
                 </FloatLabel>
@@ -286,11 +345,14 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     id="emergencyContactName"
                     value={formData.emergencyContactName}
                     onChange={(e) => handleInputChange('emergencyContactName', e.target.value)}
-                    className="w-full"
+                    className={`w-full ${hasFieldError('emergencyContactName') ? 'p-invalid' : ''}`}
                     required
                   />
                   <label htmlFor="emergencyContactName">Nombre completo</label>
                 </FloatLabel>
+                {hasFieldError('emergencyContactName') && (
+                  <small className="p-error block mt-1">{getFieldError('emergencyContactName')}</small>
+                )}
               </div>
 
               <div className="flex align-items-center justify-content-center">
@@ -300,11 +362,14 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     value={formData.emergencyContactPhone}
                     onValueChange={(e) => handleInputChange('emergencyContactPhone', e.value)}
                     useGrouping={false}
-                    className="w-full"
+                    className={`w-full ${hasFieldError('emergencyContactPhone') ? 'p-invalid' : ''}`}
                     required
                   />
                   <label htmlFor="emergencyContactPhone">Teléfono</label>
                 </FloatLabel>
+                {hasFieldError('emergencyContactPhone') && (
+                  <small className="p-error block mt-1">{getFieldError('emergencyContactPhone')}</small>
+                )}
               </div>
 
               <div className="flex align-items-center justify-content-center">
@@ -315,10 +380,13 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                     onChange={(e) => handleInputChange('emergencyContactRelationship', e.value)}
                     options={relationshipOptions}
                     optionLabel="name"
-                    className="w-full"
+                    className={`w-full ${hasFieldError('emergencyContactRelationship') ? 'p-invalid' : ''}`}
                   />
                   <label htmlFor="emergencyContactRelationship">Relación</label>
                 </FloatLabel>
+                {hasFieldError('emergencyContactRelationship') && (
+                  <small className="p-error block mt-1">{getFieldError('emergencyContactRelationship')}</small>
+                )}
               </div>
             </div>
           </div>
@@ -340,15 +408,20 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                 />
               </div>
               {formData.hasDisease && (
-                <FloatLabel>
-                  <InputText
-                    id="diseaseName"
-                    value={formData.diseaseName}
-                    onChange={(e) => handleInputChange('diseaseName', e.target.value)}
-                    className="w-full"
-                  />
-                  <label htmlFor="diseaseName">En caso afirmativo, especificar.</label>
-                </FloatLabel>
+                <div>
+                  <FloatLabel>
+                    <InputText
+                      id="diseaseName"
+                      value={formData.diseaseName}
+                      onChange={(e) => handleInputChange('diseaseName', e.target.value)}
+                      className={`w-full ${hasFieldError('diseaseName') ? 'p-invalid' : ''}`}
+                    />
+                    <label htmlFor="diseaseName">En caso afirmativo, especificar.</label>
+                  </FloatLabel>
+                  {hasFieldError('diseaseName') && (
+                    <small className="p-error block mt-1">{getFieldError('diseaseName')}</small>
+                  )}
+                </div>
               )}
             </div>
 
@@ -362,15 +435,20 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                 />
               </div>
               {formData.hasInjury && (
-                <FloatLabel>
-                  <InputText
-                    id="injuryName"
-                    value={formData.injuryName}
-                    onChange={(e) => handleInputChange('injuryName', e.target.value)}
-                    className="w-full"
-                  />
-                  <label htmlFor="injuryName">En caso afirmativo, especificar.</label>
-                </FloatLabel>
+                <div>
+                  <FloatLabel>
+                    <InputText
+                      id="injuryName"
+                      value={formData.injuryName}
+                      onChange={(e) => handleInputChange('injuryName', e.target.value)}
+                      className={`w-full ${hasFieldError('injuryName') ? 'p-invalid' : ''}`}
+                    />
+                    <label htmlFor="injuryName">En caso afirmativo, especificar.</label>
+                  </FloatLabel>
+                  {hasFieldError('injuryName') && (
+                    <small className="p-error block mt-1">{getFieldError('injuryName')}</small>
+                  )}
+                </div>
               )}
             </div>
 
@@ -384,15 +462,20 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                 />
               </div>
               {formData.takesMedications && (
-                <FloatLabel>
-                  <InputText
-                    id="medicationsName"
-                    value={formData.medicationsName}
-                    onChange={(e) => handleInputChange('medicationsName', e.target.value)}
-                    className="w-full"
-                  />
-                  <label htmlFor="medicationsName">En caso afirmativo, especificar.</label>
-                </FloatLabel>
+                <div>
+                  <FloatLabel>
+                    <InputText
+                      id="medicationsName"
+                      value={formData.medicationsName}
+                      onChange={(e) => handleInputChange('medicationsName', e.target.value)}
+                      className={`w-full ${hasFieldError('medicationsName') ? 'p-invalid' : ''}`}
+                    />
+                    <label htmlFor="medicationsName">En caso afirmativo, especificar.</label>
+                  </FloatLabel>
+                  {hasFieldError('medicationsName') && (
+                    <small className="p-error block mt-1">{getFieldError('medicationsName')}</small>
+                  )}
+                </div>
               )}
             </div>
 
@@ -406,15 +489,20 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                 />
               </div>
               {formData.hasAllergies && (
-                <FloatLabel>
-                  <InputText
-                    id="allergiesName"
-                    value={formData.allergiesName}
-                    onChange={(e) => handleInputChange('allergiesName', e.target.value)}
-                    className="w-full"
-                  />
-                  <label htmlFor="allergiesName">En caso afirmativo, especificar.</label>
-                </FloatLabel>
+                <div>
+                  <FloatLabel>
+                    <InputText
+                      id="allergiesName"
+                      value={formData.allergiesName}
+                      onChange={(e) => handleInputChange('allergiesName', e.target.value)}
+                      className={`w-full ${hasFieldError('allergiesName') ? 'p-invalid' : ''}`}
+                    />
+                    <label htmlFor="allergiesName">En caso afirmativo, especificar.</label>
+                  </FloatLabel>
+                  {hasFieldError('allergiesName') && (
+                    <small className="p-error block mt-1">{getFieldError('allergiesName')}</small>
+                  )}
+                </div>
               )}
             </div>
 
@@ -447,9 +535,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   <RadioButton
                     inputId="social-media"
                     name="howDidYouHear"
-                    value="social-media"
+                    value="1"
                     onChange={(e) => handleInputChange('howDidYouHear', e.value)}
-                    checked={formData.howDidYouHear === 'social-media'}
+                    checked={formData.howDidYouHear === '1'}
                   />
                   <label htmlFor="social-media" className="ml-2">Redes sociales</label>
                 </div>
@@ -457,9 +545,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   <RadioButton
                     inputId="friends-family"
                     name="howDidYouHear"
-                    value="friends-family"
+                    value="2"
                     onChange={(e) => handleInputChange('howDidYouHear', e.value)}
-                    checked={formData.howDidYouHear === 'friends-family'}
+                    checked={formData.howDidYouHear === '2'}
                   />
                   <label htmlFor="friends-family" className="ml-2">Amigos/Familiar</label>
                 </div>
@@ -467,9 +555,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   <RadioButton
                     inputId="advertisement"
                     name="howDidYouHear"
-                    value="advertisement"
+                    value="3"
                     onChange={(e) => handleInputChange('howDidYouHear', e.value)}
-                    checked={formData.howDidYouHear === 'advertisement'}
+                    checked={formData.howDidYouHear === '3'}
                   />
                   <label htmlFor="advertisement" className="ml-2">Anuncio</label>
                 </div>
@@ -477,9 +565,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   <RadioButton
                     inputId="walked-by"
                     name="howDidYouHear"
-                    value="walked-by"
+                    value="4"
                     onChange={(e) => handleInputChange('howDidYouHear', e.value)}
-                    checked={formData.howDidYouHear === 'walked-by'}
+                    checked={formData.howDidYouHear === '4'}
                   />
                   <label htmlFor="walked-by" className="ml-2">Pasé por aquí</label>
                 </div>
@@ -494,9 +582,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   <RadioButton
                     inputId="someone-picks-up"
                     name="endOfClass"
-                    value="someone-picks-up"
+                    value="1"
                     onChange={(e) => handleInputChange('endOfClass', e.value)}
-                    checked={formData.endOfClass === 'someone-picks-up'}
+                    checked={formData.endOfClass === '1'}
                   />
                   <label htmlFor="someone-picks-up" className="ml-2">Alguien debe recoger al alumno</label>
                 </div>
@@ -504,9 +592,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   <RadioButton
                     inputId="leaves-alone"
                     name="endOfClass"
-                    value="leaves-alone"
+                    value="2"
                     onChange={(e) => handleInputChange('endOfClass', e.value)}
-                    checked={formData.endOfClass === 'leaves-alone'}
+                    checked={formData.endOfClass === '2'}
                   />
                   <label htmlFor="leaves-alone" className="ml-2">El alumno puede retirarse solo</label>
                 </div>
@@ -521,9 +609,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   <RadioButton
                     inputId="adults"
                     name="classLevel"
-                    value="adults"
+                    value="1"
                     onChange={(e) => handleInputChange('classLevel', e.value)}
-                    checked={formData.classLevel === 'adults'}
+                    checked={formData.classLevel === '1'}
                   />
                   <label htmlFor="adults" className="ml-2">Adultos</label>
                 </div>
@@ -531,9 +619,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   <RadioButton
                     inputId="kids-beginner"
                     name="classLevel"
-                    value="kids-beginner"
+                    value="2"
                     onChange={(e) => handleInputChange('classLevel', e.value)}
-                    checked={formData.classLevel === 'kids-beginner'}
+                    checked={formData.classLevel === '2'}
                   />
                   <label htmlFor="kids-beginner" className="ml-2">Niños "principiantes"</label>
                 </div>
@@ -541,9 +629,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   <RadioButton
                     inputId="kids-intermediate"
                     name="classLevel"
-                    value="kids-intermediate"
+                    value="3"
                     onChange={(e) => handleInputChange('classLevel', e.value)}
-                    checked={formData.classLevel === 'kids-intermediate'}
+                    checked={formData.classLevel === '3'}
                   />
                   <label htmlFor="kids-intermediate" className="ml-2">Niños "intermedio"</label>
                 </div>
@@ -551,9 +639,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   <RadioButton
                     inputId="kids-advanced"
                     name="classLevel"
-                    value="kids-advanced"
+                    value="4"
                     onChange={(e) => handleInputChange('classLevel', e.value)}
-                    checked={formData.classLevel === 'kids-advanced'}
+                    checked={formData.classLevel === '4'}
                   />
                   <label htmlFor="kids-advanced" className="ml-2">Niños "avanzado"</label>
                 </div>
@@ -576,6 +664,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   onChange={(e) => handleInputChange('acceptsRegulations', e.checked)}
                 />
                 <label htmlFor="regulations" className="ml-2">Aceptación de Reglamento Interno</label>
+                {hasFieldError('acceptsRegulations') && (
+                  <small className="p-error block mt-1">{getFieldError('acceptsRegulations')}</small>
+                )}
               </div>
 
               <div className="flex align-items-center">
@@ -585,6 +676,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   onChange={(e) => handleInputChange('acceptsResponsibility', e.checked)}
                 />
                 <label htmlFor="responsibility" className="ml-2">Liberación de Responsabilidad</label>
+                {hasFieldError('acceptsResponsibility') && (
+                  <small className="p-error block mt-1">{getFieldError('acceptsResponsibility')}</small>
+                )}
               </div>
 
               <div className="flex align-items-center">
@@ -594,6 +688,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   onChange={(e) => handleInputChange('acceptsPrivacy', e.checked)}
                 />
                 <label htmlFor="privacy" className="ml-2">Política de Privacidad</label>
+                {hasFieldError('acceptsPrivacy') && (
+                  <small className="p-error block mt-1">{getFieldError('acceptsPrivacy')}</small>
+                )}
               </div>
 
               <div className="flex align-items-center">
@@ -603,6 +700,9 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
                   onChange={(e) => handleInputChange('signed', e.checked)}
                 />
                 <label htmlFor="signature" className="ml-2">Firma del Estudiante/Padre/Tutor</label>
+                {hasFieldError('signed') && (
+                  <small className="p-error block mt-1">{getFieldError('signed')}</small>
+                )}
               </div>
             </div>
           </div>
@@ -615,12 +715,14 @@ export const ClientsForm = ({ cliente = null, onSubmit, onCancel }) => {
             label="Cancelar"
             icon="pi pi-times"
             severity="secondary"
-            onClick={onCancel}
+            onClick={handleCancel}
+            disabled={loading}
           />
           <Button
             type="submit"
             label={isEditing ? 'Actualizar Cliente' : 'Registrar Cliente'}
             icon="pi pi-check"
+            loading={loading}
           />
         </div>
       </form>
